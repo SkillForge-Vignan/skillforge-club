@@ -70,7 +70,13 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // ─── Security & Middleware ────────────────────────────────────────────────────
 app.use(helmet());
 app.use(cors({
-  origin: true,
+  origin: [
+    "https://skillforge-club.vercel.app",
+    "https://skillforge-club-website.vercel.app",
+    /\.vercel\.app$/,
+    "http://localhost:5173",
+    "http://localhost:3000",
+  ],
   credentials: true,
 }));
 app.use(morgan("dev"));
