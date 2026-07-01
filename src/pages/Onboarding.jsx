@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { GraduationCap, BookOpen, User, ChevronRight, Check, Loader2 } from "lucide-react";
 import { getTokenFor, getUserFor, saveToken, getUser } from "../auth";
 
-const BASE = "http://localhost:5000/api";
+import { API_URL } from "../config";
+const BASE = API_URL;
 
 const BRANCHES = ["CSE", "IT", "ECE", "EEE", "MECH", "CIVIL", "AIDS", "AIML", "CSD", "Other"];
 const YEARS    = ["1st Year", "2nd Year", "3rd Year", "4th Year"];

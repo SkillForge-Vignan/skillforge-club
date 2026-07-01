@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Settings, BrainCircuit, Rocket, BookOpen, Calendar, Users, MessageSquare, LogIn, ChevronRight, CheckCircle2, ChevronDown, MonitorPlay, Code2, Sparkles, Mail, Phone, MapPin, Send, Code, Cpu, Smartphone, AlertCircle } from 'lucide-react';
 import skillForgeLogo from '../assets/logo.png';
 import campusBg from '../assets/campus.png';
+import { API_URL, API_BASE_URL } from '../config';
 
 const Home = React.memo(() => {
   const { scrollY } = useScroll();
@@ -143,7 +144,7 @@ const Home = React.memo(() => {
   }, [displayProjects, activeProj]);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/events')
+    fetch(`${API_URL}/events`)
       .then((r) => {
         if (!r.ok) throw new Error();
         return r.json();
@@ -165,7 +166,7 @@ const Home = React.memo(() => {
         setIsBackendOffline(true);
       });
 
-    fetch('http://localhost:5000/api/projects?featured=true')
+    fetch(`${API_URL}/projects?featured=true`)
       .then((r) => {
         if (!r.ok) throw new Error();
         return r.json();
@@ -291,7 +292,7 @@ const Home = React.memo(() => {
           <div className="max-w-4xl mx-auto mt-12 px-6 py-4 rounded-3xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(245,158,11,0.05)] relative z-30">
             <AlertCircle className="w-5 h-5 flex-shrink-0 animate-pulse text-amber-400" />
             <span>
-              <strong>Demo Mode:</strong> The frontend cannot connect to the backend server (at <code className="bg-slate-950 px-1.5 py-0.5 rounded font-mono text-xs text-white">http://localhost:5000</code>). Some sections are showing mock data.
+              <strong>Demo Mode:</strong> The frontend cannot connect to the backend server (at <code className="bg-slate-950 px-1.5 py-0.5 rounded font-mono text-xs text-white">{API_BASE_URL}</code>). Some sections are showing mock data.
             </span>
           </div>
         )}
@@ -443,7 +444,7 @@ const Home = React.memo(() => {
                       <div className="w-full md:w-1/2 relative aspect-video md:aspect-square lg:aspect-video rounded-3xl overflow-hidden border border-white/5 shrink-0 group/img">
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/10 to-transparent opacity-60 z-10" />
                         <img
-                          src={displayProjects[activeProj].image ? (displayProjects[activeProj].image.startsWith('/uploads/') ? `http://localhost:5000${displayProjects[activeProj].image}` : displayProjects[activeProj].image) : ''}
+                          src={displayProjects[activeProj].image ? (displayProjects[activeProj].image.startsWith('/uploads/') ? `${API_BASE_URL}${displayProjects[activeProj].image}` : displayProjects[activeProj].image) : ''}
                           alt={displayProjects[activeProj].title}
                           className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500"
                         />

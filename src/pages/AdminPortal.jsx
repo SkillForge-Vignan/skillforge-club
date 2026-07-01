@@ -8,7 +8,9 @@ import {
 } from "lucide-react";
 import { getTokenFor } from "../auth";
 
-const BASE = "http://localhost:5000/api";
+import { API_URL, API_BASE_URL } from "../config";
+
+const BASE = API_URL;
 
 const authFetch = async (path, opts = {}) => {
   const res = await fetch(`${BASE}${path}`, {
@@ -505,7 +507,7 @@ const ProjectsTab = () => {
     <tr key={p.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
       <td className="py-4 px-4">
         <div className="flex items-center gap-3">
-          {p.image && <img src={p.image.startsWith('/uploads/') ? `http://localhost:5000${p.image}` : p.image} alt={p.title} className="w-10 h-10 rounded-lg object-cover border border-white/10" />}
+          {p.image && <img src={p.image.startsWith('/uploads/') ? `${API_BASE_URL}${p.image}` : p.image} alt={p.title} className="w-10 h-10 rounded-lg object-cover border border-white/10" />}
           <span className="font-bold text-white">{p.title}</span>
         </div>
       </td>
@@ -624,7 +626,7 @@ const TeamTab = () => {
       <td className="py-4 px-4">
         <div className="flex items-center gap-3">
           {m.avatar
-            ? <img src={m.avatar.startsWith('/uploads/') ? `http://localhost:5000${m.avatar}` : m.avatar} alt={m.name || "Team Member"} className="w-9 h-9 rounded-full object-cover border border-white/10 flex-shrink-0" />
+            ? <img src={m.avatar.startsWith('/uploads/') ? `${API_BASE_URL}${m.avatar}` : m.avatar} alt={m.name || "Team Member"} className="w-9 h-9 rounded-full object-cover border border-white/10 flex-shrink-0" />
             : <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 flex items-center justify-center text-sm font-black text-white flex-shrink-0">{((m.name || " ").charAt(0)).toUpperCase()}</div>
           }
           <div>

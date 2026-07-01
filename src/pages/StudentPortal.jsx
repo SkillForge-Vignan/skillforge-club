@@ -3,7 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Mail, Phone, Rocket, BookOpen, Trophy, Target, Clock, CheckCircle2, MessageSquare, BrainCircuit, Code2, Loader2, User, CalendarCheck, ExternalLink, ChevronRight, Star, Layers, Globe, Database, Brain, Cpu, Shield, Smartphone, BarChart2, Send } from "lucide-react";
 import { getTokenFor, getUser, logout } from "../auth";
 
-const BASE = "http://localhost:5000/api";
+import { API_URL } from "../config";
+const BASE = API_URL;
 const authFetch = async (path) => {
   const res = await fetch(`${BASE}${path}`, {
     headers: { Authorization: `Bearer ${getTokenFor("student")}` },

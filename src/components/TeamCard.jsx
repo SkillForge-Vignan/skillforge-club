@@ -10,12 +10,14 @@ const COLORS = [
   'from-rose-600 to-red-500',
 ];
 
+import { API_BASE_URL } from '../config';
+
 const TeamCard = React.memo(({ name, role, domain, imageUrl, linkedin, github }) => {
   const color = COLORS[(name?.charCodeAt(0) || 0) % COLORS.length];
   const initials = name?.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2) || '?';
 
   const displayImage = imageUrl && imageUrl.startsWith('/uploads/')
-    ? `http://localhost:5000${imageUrl}`
+    ? `${API_BASE_URL}${imageUrl}`
     : imageUrl;
 
   return (
