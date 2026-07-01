@@ -185,9 +185,30 @@ app.listen(PORT, () => {
   console.log(`\n🚀 SkillForge API running on http://localhost:${PORT}`);
   console.log(`📚 API Docs: http://localhost:${PORT}/api-docs`);
   console.log(`📦 Environment: ${process.env.NODE_ENV || "development"}\n`);
+
+  // ─── Keep-Alive Ping (prevents Render free tier from sleeping) ─────────────
+  // Render spins down free services after 15 mins of inactivity.
+  // This self-ping every 14 minutes keeps the service awake.
+  if (process.env.NODE_ENV === "production" && process.env.RENDER_EXTERNAL_URL) {
+    const PING_URL = `${process.env.RENDER_EXTERNAL_URL}/api/health`;
+    setInterval(async () => {
+      try {
+        const { default: https } = await import("https");
+        https.get(PING_URL, (res) => {
+          console.log(`[Keep-Alive] Pinged ${PING_URL} → ${res.statusCode}`);
+        }).on("error", (err) => {
+          console.warn("[Keep-Alive] Ping failed:", err.message);
+        });
+      } catch (e) {
+        console.warn("[Keep-Alive] Error:", e.message);
+      }
+    }, 14 * 60 * 1000); // every 14 minutes
+    console.log(`🔔 Keep-alive ping enabled → ${PING_URL}`);
+  }
 });
 
 export default app;
+
 
 
 

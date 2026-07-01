@@ -1,73 +1,34 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ProjectCard from '../components/ProjectCard';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, Rocket, RefreshCw } from 'lucide-react';
 import { api } from '../api';
-import { API_BASE_URL } from '../config';
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
   const [filter, setFilter]     = useState('All');
   const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState(null);
-  const [isOffline, setIsOffline] = useState(false);
+  const [error, setError]       = useState(false);
 
-  const MOCK_PROJECTS = useMemo(() => [
-    {
-      id: 1,
-      title: 'AI Resume Analyzer',
-      description: 'An intelligent parsing engine that extracts critical information from resumes, scoring them against industry benchmarks to give students actionable feedback.',
-      category: 'AI/ML',
-      image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop',
-      githubUrl: 'https://github.com/skillforge-club/ai-resume-analyzer',
-      liveUrl: 'https://resume-analyzer.skillforge.club',
-      techStack: ['Python', 'FastAPI', 'NLP', 'React']
-    },
-    {
-      id: 2,
-      title: 'Smart Home Hub',
-      description: 'A centralized dashboard connecting multiple microcontrollers. Allows students to control lights, monitor temperature, and run automated routines directly from the web.',
-      category: 'Full Stack',
-      image: 'https://images.unsplash.com/photo-1618761714954-0b8cd0026356?q=80&w=2070&auto=format&fit=crop',
-      githubUrl: 'https://github.com/skillforge-club/smart-home-hub',
-      liveUrl: 'https://smarthome.skillforge.club',
-      techStack: ['C++', 'ESP32', 'React', 'Node.js']
-    },
-    {
-      id: 3,
-      title: 'SkillForge Student Hub',
-      description: 'The internal student, mentor, and admin platform designed to track project progress, assign mentorship tasks, and manage code check-ins.',
-      category: 'Web App',
-      image: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=2070&auto=format&fit=crop',
-      githubUrl: 'https://github.com/skillforge-club/hub',
-      liveUrl: 'https://portal.skillforge.club',
-      techStack: ['React', 'Vite', 'Tailwind', 'Express', 'Postgres']
-    }
-  ], []);
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await api.getProjects();
-        if (Array.isArray(data)) {
-          setProjects(data);
-          setIsOffline(false);
-        } else {
-          setProjects(MOCK_PROJECTS);
-          setIsOffline(true);
-        }
-      } catch (err) {
-        console.warn("Backend not running, falling back to mock projects.");
-        setProjects(MOCK_PROJECTS);
-        setIsOffline(true);
-      } finally {
-        setLoading(false);
+  const load = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const data = await api.getProjects();
+      if (Array.isArray(data)) {
+        setProjects(data);
+      } else {
+        setError(true);
       }
-    };
-    load();
-  }, [MOCK_PROJECTS]);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Derive categories dynamically from data
+  useEffect(() => { load(); }, []);
+
   const categories = useMemo(() => {
     const cats = [...new Set(projects.map((p) => p.category).filter(Boolean))];
     return ['All', ...cats];
@@ -76,39 +37,44 @@ const Projects = () => {
   const filtered = filter === 'All' ? projects : projects.filter((p) => p.category === filter);
 
   if (loading) return (
-    <div className="min-h-screen bg-[#0B1121] flex items-center justify-center">
+    <div className="min-h-screen bg-[#0B1121] flex flex-col items-center justify-center gap-4">
       <Loader2 className="animate-spin text-cyan-400" size={40} />
+      <p className="text-slate-400 text-sm">Connecting to server...</p>
+    </div>
+  );
+
+  if (error) return (
+    <div className="min-h-screen bg-[#0B1121] flex flex-col items-center justify-center gap-6 text-center px-4">
+      <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center">
+        <RefreshCw size={28} className="text-red-400" />
+      </div>
+      <div>
+        <h2 className="text-xl font-bold text-white mb-2">Could not load projects</h2>
+        <p className="text-slate-400 text-sm max-w-sm">The server may be waking up. Please wait a moment and try again.</p>
+      </div>
+      <button
+        onClick={load}
+        className="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-semibold transition-all flex items-center gap-2"
+      >
+        <RefreshCw size={16} /> Retry
+      </button>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-[#0B1121] text-white pt-24 pb-20 relative overflow-hidden selection:bg-cyan-500/30">
       
-      {/* Morphing background gradient orbs */}
+      {/* Background orbs */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden" style={{ contain: 'layout paint' }}>
         <motion.div
-          animate={{
-            x: [0, 30, -20, 0],
-            y: [0, -40, 20, 0],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute top-0 right-[-10%] w-[40%] h-[40%] bg-blue-600/5 rounded-full blur-[120px]" 
+          animate={{ x: [0, 30, -20, 0], y: [0, -40, 20, 0] }}
+          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-0 right-[-10%] w-[40%] h-[40%] bg-blue-600/5 rounded-full blur-[120px]"
         />
         <motion.div
-          animate={{
-            x: [0, -20, 30, 0],
-            y: [0, 30, -40, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute bottom-[10%] left-[-10%] w-[35%] h-[35%] bg-purple-500/5 rounded-full blur-[100px]" 
+          animate={{ x: [0, -20, 30, 0], y: [0, 30, -40, 0] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-[10%] left-[-10%] w-[35%] h-[35%] bg-purple-500/5 rounded-full blur-[100px]"
         />
       </div>
 
@@ -122,35 +88,33 @@ const Projects = () => {
           </p>
         </div>
 
-        {isOffline && (
-          <div className="max-w-2xl mx-auto mb-10 px-6 py-4 rounded-3xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(245,158,11,0.05)]">
-            <AlertCircle className="w-5 h-5 flex-shrink-0 animate-pulse text-amber-400" />
-            <span>
-              <strong>Demo Mode:</strong> The frontend cannot connect to the backend server (at <code className="bg-slate-950 px-1.5 py-0.5 rounded font-mono text-xs text-white">{API_BASE_URL}</code>). Showing offline mock projects.
-            </span>
+        {projects.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-3 mb-12">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setFilter(cat)}
+                className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
+                  filter === cat
+                    ? 'bg-cyan-500 text-slate-950 shadow-[0_0_15px_rgba(6,182,212,0.4)] border border-cyan-400'
+                    : 'bg-slate-900/60 backdrop-blur-md text-gray-400 hover:text-white hover:bg-slate-800/80 border border-white/5'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
         )}
 
-        {/* Dynamic category filters from DB */}
-        <div className="flex flex-wrap justify-center gap-3 mb-12">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setFilter(cat)}
-              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
-                filter === cat
-                  ? 'bg-cyan-500 text-slate-950 shadow-[0_0_15px_rgba(6,182,212,0.4)] border border-cyan-400'
-                  : 'bg-slate-900/60 backdrop-blur-md text-gray-400 hover:text-white hover:bg-slate-800/80 border border-white/5'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
         {filtered.length === 0 ? (
-          <div className="text-center py-24 text-slate-500">
-            <p className="text-lg">No projects found{filter !== 'All' ? ` in "${filter}"` : ''}.</p>
+          <div className="text-center py-24 bg-slate-900/30 rounded-3xl border border-white/5">
+            <Rocket size={40} className="mx-auto text-slate-600 mb-3" />
+            <p className="text-slate-400 text-lg font-medium">
+              {projects.length === 0 ? 'No projects added yet.' : `No projects found in "${filter}".`}
+            </p>
+            <p className="text-slate-600 text-sm mt-1">
+              {projects.length === 0 ? 'Projects will appear here once added by the admin.' : ''}
+            </p>
           </div>
         ) : (
           <motion.div layout className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">

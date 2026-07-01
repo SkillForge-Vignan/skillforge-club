@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Calendar, MapPin, Clock, Loader2, ExternalLink, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Calendar, MapPin, Clock, Loader2, ExternalLink, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { api } from '../api';
-import { API_BASE_URL } from '../config';
 
 const EventCard = ({ event, isPast }) => {
   const handleRegister = () => {
@@ -65,78 +64,55 @@ const EventCard = ({ event, isPast }) => {
 };
 
 const Events = () => {
-  const [events, setEvents] = useState([]);
+  const [events, setEvents]   = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isOffline, setIsOffline] = useState(false);
+  const [error, setError]     = useState(false);
 
-  const MOCK_EVENTS = useMemo(() => [
-    {
-      id: 1,
-      title: "Web Dev Bootcamp",
-      description: "Learn HTML, CSS, JS from scratch in one day with our hands-on experts.",
-      date: "2026-08-10",
-      time: "10:00 AM",
-      venue: "CS Lab 301",
-      category: "Web Development",
-      capacity: 100,
-      registered: 45,
-      registration_link: "https://forms.gle/mock"
-    },
-    {
-      id: 2,
-      title: "AI & ML Workshop",
-      description: "Hands-on session on neural networks, LLMs, and Python libraries.",
-      date: "2026-08-20",
-      time: "2:00 PM",
-      venue: "Seminar Hall",
-      category: "AI/ML",
-      capacity: 80,
-      registered: 60,
-      registration_link: "https://forms.gle/mock"
-    },
-    {
-      id: 3,
-      title: "Hackathon 2026",
-      description: "24-hour coding competition. Build innovative projects and win prizes!",
-      date: "2026-09-05",
-      time: "9:00 AM",
-      venue: "Main Auditorium",
-      category: "Hackathon",
-      capacity: 200,
-      registered: 120,
-      registration_link: "https://forms.gle/mock"
-    }
-  ], []);
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await api.getEvents();
-        if (Array.isArray(data)) {
-          setEvents(data);
-          setIsOffline(false);
-        } else {
-          setEvents(MOCK_EVENTS);
-          setIsOffline(true);
-        }
-      } catch (err) {
-        console.log(err);
-        setEvents(MOCK_EVENTS);
-        setIsOffline(true);
-      } finally {
-        setLoading(false);
+  const load = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const data = await api.getEvents();
+      if (Array.isArray(data)) {
+        setEvents(data);
+      } else {
+        setError(true);
       }
-    };
-    load();
-  }, [MOCK_EVENTS]);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const today = new Date();
+  useEffect(() => { load(); }, []);
+
+  const today    = new Date();
   const upcoming = events.filter((e) => new Date(e.date) >= today);
   const past     = events.filter((e) => new Date(e.date) < today);
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4">
       <Loader2 className="animate-spin text-blue-400" size={40} />
+      <p className="text-slate-400 text-sm">Connecting to server...</p>
+    </div>
+  );
+
+  if (error) return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-6 text-center px-4">
+      <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center">
+        <RefreshCw size={28} className="text-red-400" />
+      </div>
+      <div>
+        <h2 className="text-xl font-bold text-white mb-2">Could not load events</h2>
+        <p className="text-slate-400 text-sm max-w-sm">The server may be waking up. Please wait a moment and try again.</p>
+      </div>
+      <button
+        onClick={load}
+        className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold transition-all flex items-center gap-2"
+      >
+        <RefreshCw size={16} /> Retry
+      </button>
     </div>
   );
 
@@ -151,21 +127,16 @@ const Events = () => {
         </p>
       </div>
 
-      {isOffline && (
-        <div className="max-w-2xl mx-auto mb-10 px-6 py-4 rounded-3xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(245,158,11,0.05)]">
-          <AlertCircle className="w-5 h-5 flex-shrink-0 animate-pulse text-amber-400" />
-          <span>
-            <strong>Demo Mode:</strong> The frontend cannot connect to the backend server (at <code className="bg-slate-950 px-1.5 py-0.5 rounded font-mono text-xs text-white">{API_BASE_URL}</code>). Showing offline mock events.
-          </span>
-        </div>
-      )}
-
       <div className="mb-16">
         <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
           <span className="w-2 h-8 bg-blue-500 rounded-full"></span> Upcoming
         </h2>
         {upcoming.length === 0 ? (
-          <p className="text-gray-500">No upcoming events right now.</p>
+          <div className="text-center py-16 bg-slate-900/30 rounded-3xl border border-white/5">
+            <Calendar size={40} className="mx-auto text-slate-600 mb-3" />
+            <p className="text-slate-400 font-medium">No upcoming events scheduled yet.</p>
+            <p className="text-slate-600 text-sm mt-1">Check back soon!</p>
+          </div>
         ) : (
           <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
             {upcoming.map((event) => (
@@ -175,16 +146,18 @@ const Events = () => {
         )}
       </div>
 
-      <div>
-        <h2 className="text-2xl font-bold text-gray-400 mb-6 flex items-center gap-2">
-          <span className="w-2 h-8 bg-gray-600 rounded-full"></span> Past Events
-        </h2>
-        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {past.map((event) => (
-            <EventCard key={event.id} event={event} isPast={true} />
-          ))}
+      {past.length > 0 && (
+        <div>
+          <h2 className="text-2xl font-bold text-gray-400 mb-6 flex items-center gap-2">
+            <span className="w-2 h-8 bg-gray-600 rounded-full"></span> Past Events
+          </h2>
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {past.map((event) => (
+              <EventCard key={event.id} event={event} isPast={true} />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
